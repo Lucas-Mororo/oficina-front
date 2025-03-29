@@ -6,29 +6,56 @@ import { Button } from '../components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../components/ui/dialog';
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
-import { Pencil, Trash2 } from 'lucide-react';
+import { Pencil, Trash2, Search } from 'lucide-react';
 import { toast } from 'sonner';
+import { useForm } from 'react-hook-form';
+import { z } from 'zod';
+import { zodResolver } from '@hookform/resolvers/zod';
+
+const veiculoSchema = z.object({
+    marca: z.string().min(1, 'Marca é obrigatória'),
+    modelo: z.string().min(1, 'Modelo é obrigatório'),
+    cor: z.string().optional(),
+    placa: z.string().regex(/^[A-Z]{3}-\d{4}$/, 'Placa deve seguir o formato ABC-1234'),
+});
+
+type VeiculoFormData = z.infer<typeof veiculoSchema>;
 
 const VeiculosPage = () => {
     const [veiculos, setVeiculos] = useState<Veiculo[]>([]);
+    const [filteredVeiculos, setFilteredVeiculos] = useState<Veiculo[]>([]);
     const [isOpen, setIsOpen] = useState(false);
     const [editingVeiculo, setEditingVeiculo] = useState<Veiculo | null>(null);
-    const [formData, setFormData] = useState({
-        id: 0,
-        marca: '',
-        modelo: '',
-        cor: '',
-        placa: '',
+    const [searchTerm, setSearchTerm] = useState('');
+
+    const {
+        register,
+        handleSubmit,
+        reset,
+        formState: { errors },
+    } = useForm<VeiculoFormData>({
+        resolver: zodResolver(veiculoSchema),
     });
 
     useEffect(() => {
         fetchVeiculos();
     }, []);
 
+    useEffect(() => {
+        const filtered = veiculos.filter(
+            (veiculo) =>
+                veiculo.marca.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                veiculo.modelo.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                veiculo.placa.toLowerCase().includes(searchTerm.toLowerCase()),
+        );
+        setFilteredVeiculos(filtered);
+    }, [searchTerm, veiculos]);
+
     const fetchVeiculos = async () => {
         try {
             const response = await getVeiculos();
             setVeiculos(response.data);
+            setFilteredVeiculos(response.data);
         } catch (error) {
             toast.error('Falha ao carregar os veículos.');
         }
@@ -37,35 +64,22 @@ const VeiculosPage = () => {
     const handleOpenForm = (veiculo?: Veiculo) => {
         if (veiculo) {
             setEditingVeiculo(veiculo);
-            setFormData(veiculo);
+            reset(veiculo);
         } else {
             setEditingVeiculo(null);
-            setFormData({ id: 0, marca: '', modelo: '', cor: '', placa: '' });
+            reset({ marca: '', modelo: '', cor: '', placa: '' });
         }
         setIsOpen(true);
     };
 
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        setFormData({ ...formData, [e.target.name]: e.target.value });
-    };
-
-    const validateForm = () => {
-        if (!formData.marca || !formData.modelo || !formData.placa) {
-            toast.error('Marca, modelo e placa são obrigatórios.');
-            return false;
-        }
-        return true;
-    };
-
-    const handleSave = async () => {
-        if (!validateForm()) return;
-
+    const onSubmit = async (data: VeiculoFormData) => {
         try {
+            const veiculoData = { ...data, id: editingVeiculo?.id || 0 };
             if (editingVeiculo) {
-                await updateVeiculo(editingVeiculo.id, formData);
+                await updateVeiculo(editingVeiculo.id, veiculoData);
                 toast.success('Veículo atualizado com sucesso!');
             } else {
-                await createVeiculo(formData);
+                await createVeiculo(veiculoData);
                 toast.success('Veículo criado com sucesso!');
             }
             fetchVeiculos();
@@ -94,6 +108,16 @@ const VeiculosPage = () => {
                 <Button onClick={() => handleOpenForm()}>+ Novo Veículo</Button>
             </div>
 
+            <div className="mb-4 flex items-center gap-2">
+                <Search className="h-5 w-5 text-gray-500" />
+                <Input
+                    placeholder="Buscar por marca, modelo ou placa..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="max-w-sm"
+                />
+            </div>
+
             <Table>
                 <TableHeader>
                     <TableRow>
@@ -106,7 +130,7 @@ const VeiculosPage = () => {
                     </TableRow>
                 </TableHeader>
                 <TableBody>
-                    {veiculos.map((veiculo) => (
+                    {filteredVeiculos.map((veiculo) => (
                         <TableRow key={veiculo.id}>
                             <TableCell>{veiculo.id}</TableCell>
                             <TableCell>{veiculo.marca}</TableCell>
@@ -131,49 +155,29 @@ const VeiculosPage = () => {
                     <DialogHeader>
                         <DialogTitle>{editingVeiculo ? 'Editar Veículo' : 'Novo Veículo'}</DialogTitle>
                     </DialogHeader>
-                    <div className="space-y-4">
+                    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
                         <div>
                             <Label htmlFor="marca">Marca</Label>
-                            <Input
-                                id="marca"
-                                name="marca"
-                                value={formData.marca}
-                                onChange={handleChange}
-                                placeholder="Ex.: Toyota"
-                            />
+                            <Input id="marca" {...register('marca')} placeholder="Ex.: Toyota" />
+                            {errors.marca && <p className="text-red-500 text-sm">{errors.marca.message}</p>}
                         </div>
                         <div>
                             <Label htmlFor="modelo">Modelo</Label>
-                            <Input
-                                id="modelo"
-                                name="modelo"
-                                value={formData.modelo}
-                                onChange={handleChange}
-                                placeholder="Ex.: Corolla"
-                            />
+                            <Input id="modelo" {...register('modelo')} placeholder="Ex.: Corolla" />
+                            {errors.modelo && <p className="text-red-500 text-sm">{errors.modelo.message}</p>}
                         </div>
                         <div>
                             <Label htmlFor="cor">Cor</Label>
-                            <Input
-                                id="cor"
-                                name="cor"
-                                value={formData.cor}
-                                onChange={handleChange}
-                                placeholder="Ex.: Preto"
-                            />
+                            <Input id="cor" {...register('cor')} placeholder="Ex.: Preto" />
+                            {errors.cor && <p className="text-red-500 text-sm">{errors.cor.message}</p>}
                         </div>
                         <div>
                             <Label htmlFor="placa">Placa</Label>
-                            <Input
-                                id="placa"
-                                name="placa"
-                                value={formData.placa}
-                                onChange={handleChange}
-                                placeholder="Ex.: ABC-1234"
-                            />
+                            <Input id="placa" {...register('placa')} placeholder="Ex.: ABC-1234" />
+                            {errors.placa && <p className="text-red-500 text-sm">{errors.placa.message}</p>}
                         </div>
-                        <Button onClick={handleSave}>Salvar</Button>
-                    </div>
+                        <Button type="submit">Salvar</Button>
+                    </form>
                 </DialogContent>
             </Dialog>
         </div>

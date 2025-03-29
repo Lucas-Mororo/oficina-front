@@ -7,13 +7,12 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../components/
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select';
-import { Pencil, Trash2 } from 'lucide-react';
+import { Pencil, Trash2, Search } from 'lucide-react';
 import { toast } from 'sonner';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 
-// Esquema de validação com Zod
 const ordemServicoSchema = z.object({
     descricao: z.string().min(1, 'Descrição é obrigatória'),
     preco: z.string().min(1, 'Preço é obrigatório').regex(/^\d+(\.\d{1,2})?$/, 'Preço deve ser um número válido'),
@@ -27,11 +26,13 @@ type OrdemServicoFormData = z.infer<typeof ordemServicoSchema>;
 
 const OrdensServicoPage = () => {
     const [ordens, setOrdens] = useState<OrdemServico[]>([]);
+    const [filteredOrdens, setFilteredOrdens] = useState<OrdemServico[]>([]);
     const [usuarios, setUsuarios] = useState<Usuario[]>([]);
     const [veiculos, setVeiculos] = useState<Veiculo[]>([]);
     const [produtos, setProdutos] = useState<Produto[]>([]);
     const [isOpen, setIsOpen] = useState(false);
     const [editingOrdem, setEditingOrdem] = useState<OrdemServico | null>(null);
+    const [searchTerm, setSearchTerm] = useState('');
 
     const {
         register,
@@ -55,6 +56,17 @@ const OrdensServicoPage = () => {
         fetchData();
     }, []);
 
+    useEffect(() => {
+        const filtered = ordens.filter(
+            (ordem) =>
+                ordem.descricao.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                ordem.usuario.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                ordem.veiculo.placa.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                ordem.produto.descricao.toLowerCase().includes(searchTerm.toLowerCase()),
+        );
+        setFilteredOrdens(filtered);
+    }, [searchTerm, ordens]);
+
     const fetchData = async () => {
         try {
             const [ordensRes, usuariosRes, veiculosRes, produtosRes] = await Promise.all([
@@ -64,6 +76,7 @@ const OrdensServicoPage = () => {
                 getProdutos(),
             ]);
             setOrdens(ordensRes.data);
+            setFilteredOrdens(ordensRes.data);
             setUsuarios(usuariosRes.data);
             setVeiculos(veiculosRes.data);
             setProdutos(produtosRes.data);
@@ -130,6 +143,16 @@ const OrdensServicoPage = () => {
                 <Button onClick={() => handleOpenForm()}>+ Nova Ordem</Button>
             </div>
 
+            <div className="mb-4 flex items-center gap-2">
+                <Search className="h-5 w-5 text-gray-500" />
+                <Input
+                    placeholder="Buscar por descrição, usuário, veículo ou produto..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="max-w-sm"
+                />
+            </div>
+
             <Table>
                 <TableHeader>
                     <TableRow>
@@ -144,7 +167,7 @@ const OrdensServicoPage = () => {
                     </TableRow>
                 </TableHeader>
                 <TableBody>
-                    {ordens.map((ordem) => (
+                    {filteredOrdens.map((ordem) => (
                         <TableRow key={ordem.id}>
                             <TableCell>{ordem.id}</TableCell>
                             <TableCell>{ordem.descricao}</TableCell>

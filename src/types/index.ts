@@ -3,8 +3,8 @@ export interface Veiculo {
     id: number;
     marca: string;
     modelo: string;
-    cor: string;
     placa: string;
+    cor?: string | undefined;
 }
 
 // Tipo para Produto
