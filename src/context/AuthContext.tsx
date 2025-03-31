@@ -3,7 +3,7 @@ import axios from 'axios';
 
 interface AuthContextType {
     user: { id: number; name: string; email: string; role: string } | null;
-    login: (email: string, password: string) => Promise<void>;
+    login: (name: string, password: string) => Promise<void>;
     logout: () => void;
     isAuthenticated: boolean;
 }
@@ -21,10 +21,10 @@ const AuthProvider = ({ children }: { children: ReactNode }) => {
         }
     }, []);
 
-    const login = async (email: string, password: string) => {
+    const login = async (name: string, password: string) => {
         try {
             // Substitua pela sua API de login real
-            const response = await axios.post('http://localhost:3000/api/login', { email, password });
+            const response = await axios.post('https://localhost:7241/api/Usuario/login', { name, password });
             const { token, user } = response.data;
             localStorage.setItem('token', token);
             setUser(user);

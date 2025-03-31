@@ -12,12 +12,13 @@ const ProdutosPage = () => {
     const [produtos, setProdutos] = useState<Produto[]>([]);
     const [isOpen, setIsOpen] = useState(false);
     const [editingProduto, setEditingProduto] = useState<Produto | null>(null);
-    const [formData, setFormData] = useState({
-        id: 0,
-        descricao: '',
-        preco: '',
-        qtdEstoque: '',
+    const [formData, setFormData] = useState<Produto>({
+        descrição: '',
+        preco: 0,
+        qtdEstoque: 0,
     });
+    console.log(formData);
+
 
     useEffect(() => {
         fetchProdutos();
@@ -38,26 +39,26 @@ const ProdutosPage = () => {
             setFormData(produto);
         } else {
             setEditingProduto(null);
-            setFormData({ id: 0, descricao: '', preco: '', qtdEstoque: '' });
+            setFormData({ descrição: '', preco: 0, qtdEstoque: 0 });
         }
         setIsOpen(true);
-    };
-
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        setFormData({ ...formData, [e.target.name]: e.target.value });
     };
 
     const handleSave = async () => {
         try {
             if (editingProduto) {
-                await updateProduto(editingProduto.id, formData);
+                if (editingProduto.id)
+                    await updateProduto(editingProduto.id, formData);
             } else {
                 await createProduto(formData);
             }
-            fetchProdutos();
             setIsOpen(false);
         } catch (error) {
             console.error('Erro ao salvar produto:', error);
+        } finally {
+            setTimeout(() => {
+                fetchProdutos();
+            }, 3000);
         }
     };
 
@@ -93,14 +94,17 @@ const ProdutosPage = () => {
                     {produtos.map((produto) => (
                         <TableRow key={produto.id}>
                             <TableCell>{produto.id}</TableCell>
-                            <TableCell>{produto.descricao}</TableCell>
+                            <TableCell>{produto.descrição}</TableCell>
                             <TableCell>{produto.preco}</TableCell>
                             <TableCell>{produto.qtdEstoque}</TableCell>
                             <TableCell className="flex gap-2">
                                 <Button variant="outline" size="sm" onClick={() => handleOpenForm(produto)}>
                                     <Pencil className="h-4 w-4" />
                                 </Button>
-                                <Button variant="destructive" size="sm" onClick={() => handleDelete(produto.id)}>
+                                <Button variant="destructive" size="sm" onClick={() => {
+                                    if (produto.id)
+                                        handleDelete(produto.id)
+                                }}>
                                     <Trash2 className="h-4 w-4" />
                                 </Button>
                             </TableCell>
@@ -120,8 +124,10 @@ const ProdutosPage = () => {
                             <Input
                                 id="descricao"
                                 name="descricao"
-                                value={formData.descricao}
-                                onChange={handleChange}
+                                value={formData.descrição}
+                                onChange={(e) => {
+                                    setFormData({ ...formData, descrição: e.target.value });
+                                }}
                                 placeholder="Ex.: Óleo de Motor"
                             />
                         </div>
@@ -131,7 +137,10 @@ const ProdutosPage = () => {
                                 id="preco"
                                 name="preco"
                                 value={formData.preco}
-                                onChange={handleChange}
+                                type='number'
+                                onChange={(e) => {
+                                    setFormData({ ...formData, preco: Number(e.target.value) });
+                                }}
                                 placeholder="Ex.: 50.00"
                             />
                         </div>
@@ -141,7 +150,10 @@ const ProdutosPage = () => {
                                 id="qtdEstoque"
                                 name="qtdEstoque"
                                 value={formData.qtdEstoque}
-                                onChange={handleChange}
+                                type='number'
+                                onChange={(e) => {
+                                    setFormData({ ...formData, qtdEstoque: Number(e.target.value) });
+                                }}
                                 placeholder="Ex.: 10"
                             />
                         </div>

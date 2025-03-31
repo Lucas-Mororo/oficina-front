@@ -10,7 +10,7 @@ import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 
 const loginSchema = z.object({
-    email: z.string().email('Email inválido'),
+    name: z.string(),
     password: z.string().min(6, 'A senha deve ter pelo menos 6 caracteres'),
 });
 
@@ -32,7 +32,7 @@ const LoginPage = () => {
     const onSubmit = async (data: LoginFormData) => {
         setLoading(true);
         try {
-            await login(data.email, data.password);
+            await login(data.name, data.password);
             toast.success('Login realizado com sucesso!');
             navigate('/veiculos');
         } catch (error) {
@@ -49,8 +49,8 @@ const LoginPage = () => {
                 <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
                     <div>
                         <Label htmlFor="email">Email</Label>
-                        <Input id="email" {...register('email')} placeholder="Ex.: usuario@example.com" />
-                        {errors.email && <p className="text-red-500 text-sm">{errors.email.message}</p>}
+                        <Input id="name" {...register('name')} placeholder="Ex.: usuario@example.com" />
+                        {errors.name && <p className="text-red-500 text-sm">{errors.name.message}</p>}
                     </div>
                     <div>
                         <Label htmlFor="password">Senha</Label>

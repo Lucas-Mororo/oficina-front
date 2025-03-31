@@ -9,10 +9,10 @@ export interface Veiculo {
 
 // Tipo para Produto
 export interface Produto {
-    id: number;
-    descricao: string;
-    preco: string; // Pode mudar para number se a API aceitar valores numéricos
-    qtdEstoque: string; // Pode mudar para number se a API aceitar valores numéricos
+    descrição: string;
+    preco: number; // Pode mudar para number se a API aceitar valores numéricos
+    qtdEstoque: number; // Pode mudar para number se a API aceitar valores numéricos
+    id?: number;
 }
 
 // Tipo para Usuário
