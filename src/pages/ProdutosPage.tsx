@@ -114,12 +114,12 @@ const ProdutosPage = () => {
             </Table>
 
             <Dialog open={isOpen} onOpenChange={setIsOpen}>
-                <DialogContent>
-                    <DialogHeader>
+                <DialogContent className="p-6 bg-white rounded-lg shadow-lg max-w-md">
+                    <DialogHeader className="relative">
                         <DialogTitle>{editingProduto ? 'Editar Produto' : 'Novo Produto'}</DialogTitle>
                     </DialogHeader>
                     <div className="space-y-4">
-                        <div>
+                        <div className="space-y-1">
                             <Label htmlFor="descricao">Descrição</Label>
                             <Input
                                 id="descricao"
@@ -131,7 +131,7 @@ const ProdutosPage = () => {
                                 placeholder="Ex.: Óleo de Motor"
                             />
                         </div>
-                        <div>
+                        <div className="space-y-1">
                             <Label htmlFor="preco">Preço</Label>
                             <Input
                                 id="preco"
@@ -144,7 +144,7 @@ const ProdutosPage = () => {
                                 placeholder="Ex.: 50.00"
                             />
                         </div>
-                        <div>
+                        <div className="space-y-1">
                             <Label htmlFor="qtdEstoque">Quantidade em Estoque</Label>
                             <Input
                                 id="qtdEstoque"

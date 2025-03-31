@@ -201,22 +201,22 @@ const OrdensServicoPage = () => {
             </Table>
 
             <Dialog open={isOpen} onOpenChange={setIsOpen}>
-                <DialogContent>
-                    <DialogHeader>
+                <DialogContent className="p-6 bg-white rounded-lg shadow-lg max-w-md">
+                    <DialogHeader className="relative">
                         <DialogTitle>{editingOrdem ? 'Editar Ordem de Serviço' : 'Nova Ordem de Serviço'}</DialogTitle>
                     </DialogHeader>
                     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-                        <div>
+                        <div className="space-y-1">
                             <Label htmlFor="descricao">Descrição</Label>
                             <Input id="descricao" {...register('descricao')} placeholder="Ex.: Troca de óleo" />
                             {errors.descricao && <p className="text-red-500 text-sm">{errors.descricao.message}</p>}
                         </div>
-                        <div>
+                        <div className="space-y-1">
                             <Label htmlFor="preco">Preço</Label>
                             <Input id="preco" {...register('preco')} placeholder="Ex.: 150.00" />
                             {errors.preco && <p className="text-red-500 text-sm">{errors.preco.message}</p>}
                         </div>
-                        <div>
+                        <div className="space-y-1">
                             <Label htmlFor="status">Status</Label>
                             <Input
                                 id="status"
@@ -226,8 +226,9 @@ const OrdensServicoPage = () => {
                             />
                             {errors.status && <p className="text-red-500 text-sm">{errors.status.message}</p>}
                         </div>
-                        <div>
-                            <Label htmlFor="usuarioId">Usuário</Label>
+                        <div className="space-y-1">
+                            <Label htmlFor="usuarioId"
+                                className="block text-sm font-medium text-gray-700">Usuário</Label>
                             <Controller
                                 name="usuarioId"
                                 control={control}
@@ -236,10 +237,10 @@ const OrdensServicoPage = () => {
                                         onValueChange={(value) => field.onChange(Number(value))}
                                         value={field.value.toString()}
                                     >
-                                        <SelectTrigger>
+                                        <SelectTrigger className="w-full rounded-md shadow-sm sm:text-sm">
                                             <SelectValue placeholder="Selecione um usuário" />
                                         </SelectTrigger>
-                                        <SelectContent>
+                                        <SelectContent className="bg-white">
                                             <SelectItem value="0" disabled>Selecione um usuário</SelectItem>
                                             {usuarios.map((usuario) => (
                                                 <SelectItem key={usuario.id} value={usuario.id.toString()}>
@@ -252,8 +253,8 @@ const OrdensServicoPage = () => {
                             />
                             {errors.usuarioId && <p className="text-red-500 text-sm">{errors.usuarioId.message}</p>}
                         </div>
-                        <div>
-                            <Label htmlFor="veiculoId">Veículo</Label>
+                        <div className="space-y-1">
+                            <Label htmlFor="veiculoId" className="text-sm font-medium text-gray-700">Veículo</Label>
                             <Controller
                                 name="veiculoId"
                                 control={control}
@@ -262,10 +263,10 @@ const OrdensServicoPage = () => {
                                         onValueChange={(value) => field.onChange(Number(value))}
                                         value={field.value.toString()}
                                     >
-                                        <SelectTrigger>
+                                        <SelectTrigger className="w-full rounded-md shadow-sm">
                                             <SelectValue placeholder="Selecione um veículo" />
                                         </SelectTrigger>
-                                        <SelectContent>
+                                        <SelectContent className="bg-white">
                                             <SelectItem value="0" disabled>Selecione um veículo</SelectItem>
                                             {veiculos.map((veiculo) => (
                                                 <SelectItem key={veiculo.id} value={veiculo.id.toString()}>
@@ -278,8 +279,8 @@ const OrdensServicoPage = () => {
                             />
                             {errors.veiculoId && <p className="text-red-500 text-sm">{errors.veiculoId.message}</p>}
                         </div>
-                        <div>
-                            <Label htmlFor="produtoId">Produto</Label>
+                        <div className="space-y-1">
+                            <Label htmlFor="produtoId" className="text-sm font-medium text-gray-700">Produto</Label>
                             <Controller
                                 name="produtoId"
                                 control={control}
@@ -288,10 +289,10 @@ const OrdensServicoPage = () => {
                                         onValueChange={(value) => field.onChange(Number(value))}
                                         value={field.value.toString()}
                                     >
-                                        <SelectTrigger>
+                                        <SelectTrigger className="w-full rounded-md shadow-sm">
                                             <SelectValue placeholder="Selecione um produto" />
                                         </SelectTrigger>
-                                        <SelectContent>
+                                        <SelectContent className="bg-white">
                                             <SelectItem value="0" disabled>Selecione um produto</SelectItem>
                                             {produtos.map((produto) => (
                                                 <SelectItem key={produto.id} value={produto.id ? produto.id.toString() : ""}>

@@ -111,12 +111,12 @@ const UsuariosPage = () => {
             </Table>
 
             <Dialog open={isOpen} onOpenChange={setIsOpen}>
-                <DialogContent>
-                    <DialogHeader>
+                <DialogContent className="p-6 bg-white rounded-lg shadow-lg max-w-md">
+                    <DialogHeader className="relative">
                         <DialogTitle>{editingUsuario ? 'Editar Usuário' : 'Novo Usuário'}</DialogTitle>
                     </DialogHeader>
                     <div className="space-y-4">
-                        <div>
+                        <div className="space-y-1">
                             <Label htmlFor="name">Nome</Label>
                             <Input
                                 id="name"
@@ -126,7 +126,7 @@ const UsuariosPage = () => {
                                 placeholder="Ex.: João Silva"
                             />
                         </div>
-                        <div>
+                        <div className="space-y-1">
                             <Label htmlFor="email">Email</Label>
                             <Input
                                 id="email"
@@ -136,7 +136,7 @@ const UsuariosPage = () => {
                                 placeholder="Ex.: joao@example.com"
                             />
                         </div>
-                        <div>
+                        <div className="space-y-1">
                             <Label htmlFor="password">Senha</Label>
                             <Input
                                 id="password"
@@ -147,7 +147,7 @@ const UsuariosPage = () => {
                                 placeholder="Digite a senha"
                             />
                         </div>
-                        <div>
+                        <div className="space-y-1">
                             <Label htmlFor="role">Função</Label>
                             <Input
                                 id="role"

@@ -151,27 +151,27 @@ const VeiculosPage = () => {
             </Table>
 
             <Dialog open={isOpen} onOpenChange={setIsOpen}>
-                <DialogContent>
-                    <DialogHeader>
+                <DialogContent className="p-6 bg-white rounded-lg shadow-lg max-w-md">
+                    <DialogHeader className="relative">
                         <DialogTitle>{editingVeiculo ? 'Editar Veículo' : 'Novo Veículo'}</DialogTitle>
                     </DialogHeader>
                     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-                        <div>
+                        <div className="space-y-1">
                             <Label htmlFor="marca">Marca</Label>
                             <Input id="marca" {...register('marca')} placeholder="Ex.: Toyota" />
                             {errors.marca && <p className="text-red-500 text-sm">{errors.marca.message}</p>}
                         </div>
-                        <div>
+                        <div className="space-y-1">
                             <Label htmlFor="modelo">Modelo</Label>
                             <Input id="modelo" {...register('modelo')} placeholder="Ex.: Corolla" />
                             {errors.modelo && <p className="text-red-500 text-sm">{errors.modelo.message}</p>}
                         </div>
-                        <div>
+                        <div className="space-y-1">
                             <Label htmlFor="cor">Cor</Label>
                             <Input id="cor" {...register('cor')} placeholder="Ex.: Preto" />
                             {errors.cor && <p className="text-red-500 text-sm">{errors.cor.message}</p>}
                         </div>
-                        <div>
+                        <div className="space-y-1">
                             <Label htmlFor="placa">Placa</Label>
                             <Input id="placa" {...register('placa')} placeholder="Ex.: ABC-1234" />
                             {errors.placa && <p className="text-red-500 text-sm">{errors.placa.message}</p>}
