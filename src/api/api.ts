@@ -2,7 +2,7 @@ import axios, { AxiosInstance } from 'axios';
 import { Veiculo, Produto, Usuario, OrdemServico } from '../types/index';
 
 const api: AxiosInstance = axios.create({
-  baseURL: 'http://localhost:3000/api',
+  baseURL: 'https://localhost:7241/api',
   headers: {
     'Content-Type': 'application/json',
   },
@@ -29,7 +29,10 @@ export const deleteVeiculo = (id: number) => api.delete(`/Veiculo/${id}`);
 // Funções para Produto
 export const getProdutos = () => api.get<Produto[]>('/Produto');
 export const getProdutoById = (id: number) => api.get<Produto>(`/Produto/${id}`);
-export const createProduto = (produto: Produto) => api.post<Produto>('/Produto', produto);
+export const createProduto = (produto: Produto) => {
+  console.log(produto)
+  api.post<Produto>('/Produto', produto)
+};
 export const updateProduto = (id: number, produto: Produto) => api.put<Produto>(`/Produto/${id}`, produto);
 export const deleteProduto = (id: number) => api.delete(`/Produto/${id}`);
 

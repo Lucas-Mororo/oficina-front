@@ -9,7 +9,7 @@ import { Label } from '../components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select';
 import { Pencil, Trash2, Search } from 'lucide-react';
 import { toast } from 'sonner';
-import { useForm } from 'react-hook-form';
+import { useForm, Controller } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 
@@ -37,7 +37,7 @@ const OrdensServicoPage = () => {
     const {
         register,
         handleSubmit,
-        setValue,
+        control,
         reset,
         formState: { errors },
     } = useForm<OrdemServicoFormData>({
@@ -59,10 +59,10 @@ const OrdensServicoPage = () => {
     useEffect(() => {
         const filtered = ordens.filter(
             (ordem) =>
-                ordem.descricao.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                ordem.usuario.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                ordem.veiculo.placa.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                ordem.produto.descricao.toLowerCase().includes(searchTerm.toLowerCase()),
+                (ordem.descricao?.toLowerCase().includes(searchTerm.toLowerCase()) || false) ||
+                (ordem.usuario?.name?.toLowerCase().includes(searchTerm.toLowerCase()) || false) ||
+                (ordem.veiculo?.placa?.toLowerCase().includes(searchTerm.toLowerCase()) || false) ||
+                (ordem.produto?.descrição?.toLowerCase().includes(searchTerm.toLowerCase()) || false)
         );
         setFilteredOrdens(filtered);
     }, [searchTerm, ordens]);
@@ -75,12 +75,13 @@ const OrdensServicoPage = () => {
                 getVeiculos(),
                 getProdutos(),
             ]);
-            setOrdens(ordensRes.data);
-            setFilteredOrdens(ordensRes.data);
-            setUsuarios(usuariosRes.data);
-            setVeiculos(veiculosRes.data);
-            setProdutos(produtosRes.data);
+            setOrdens(ordensRes.data || []);
+            setFilteredOrdens(ordensRes.data || []);
+            setUsuarios(usuariosRes.data || []);
+            setVeiculos(veiculosRes.data || []);
+            setProdutos(produtosRes.data || []);
         } catch (error) {
+            console.error('Erro ao carregar dados:', error);
             toast.error('Falha ao carregar os dados.');
         }
     };
@@ -89,27 +90,34 @@ const OrdensServicoPage = () => {
         if (ordem) {
             setEditingOrdem(ordem);
             reset({
-                descricao: ordem.descricao,
-                preco: ordem.preco,
-                status: ordem.status,
-                usuarioId: ordem.usuarioId,
-                veiculoId: ordem.veiculoId,
-                produtoId: ordem.produtoId,
+                descricao: ordem.descricao || '',
+                preco: ordem.preco || '',
+                status: ordem.status || 1,
+                usuarioId: ordem.usuarioId || 0,
+                veiculoId: ordem.veiculoId || 0,
+                produtoId: ordem.produtoId || 0,
             });
         } else {
             setEditingOrdem(null);
-            reset({ descricao: '', preco: '', status: 1, usuarioId: 0, veiculoId: 0, produtoId: 0 });
+            reset({
+                descricao: '',
+                preco: '',
+                status: 1,
+                usuarioId: 0,
+                veiculoId: 0,
+                produtoId: 0
+            });
         }
         setIsOpen(true);
     };
 
-    const handleSelectChange = (name: keyof OrdemServicoFormData, value: string) => {
-        setValue(name, Number(value));
-    };
-
     const onSubmit = async (data: OrdemServicoFormData) => {
         try {
-            const ordemData: OrdemServicoInput = { ...data, id: editingOrdem?.id || 0 };
+            const ordemData: OrdemServicoInput = {
+                ...data,
+                id: editingOrdem?.id || 0,
+            };
+
             if (editingOrdem) {
                 await updateOrdemServico(editingOrdem.id, ordemData);
                 toast.success('Ordem de serviço atualizada com sucesso!');
@@ -117,20 +125,23 @@ const OrdensServicoPage = () => {
                 await createOrdemServico(ordemData);
                 toast.success('Ordem de serviço criada com sucesso!');
             }
-            fetchData();
+            await fetchData();
             setIsOpen(false);
         } catch (error) {
+            console.error('Erro ao salvar ordem de serviço:', error);
             toast.error('Falha ao salvar a ordem de serviço.');
         }
     };
 
-    const handleDelete = async (id: number) => {
+    const handleDelete = async (id: number | undefined) => {
+        if (!id) return;
         if (confirm('Tem certeza que deseja excluir esta ordem de serviço?')) {
             try {
                 await deleteOrdemServico(id);
                 toast.success('Ordem de serviço excluída com sucesso!');
-                fetchData();
+                await fetchData();
             } catch (error) {
+                console.error('Erro ao excluir ordem de serviço:', error);
                 toast.error('Falha ao excluir a ordem de serviço.');
             }
         }
@@ -168,19 +179,19 @@ const OrdensServicoPage = () => {
                 </TableHeader>
                 <TableBody>
                     {filteredOrdens.map((ordem) => (
-                        <TableRow key={ordem.id}>
-                            <TableCell>{ordem.id}</TableCell>
-                            <TableCell>{ordem.descricao}</TableCell>
-                            <TableCell>{ordem.preco}</TableCell>
-                            <TableCell>{ordem.status}</TableCell>
-                            <TableCell>{ordem.usuario.name}</TableCell>
-                            <TableCell>{ordem.veiculo.placa}</TableCell>
-                            <TableCell>{ordem.produto.descricao}</TableCell>
+                        <TableRow key={ordem?.id || Math.random()}>
+                            <TableCell>{ordem?.id || '-'}</TableCell>
+                            <TableCell>{ordem?.descricao || '-'}</TableCell>
+                            <TableCell>{ordem?.preco || '-'}</TableCell>
+                            <TableCell>{ordem?.status || '-'}</TableCell>
+                            <TableCell>{ordem?.usuario?.name || '-'}</TableCell>
+                            <TableCell>{ordem?.veiculo?.placa || '-'}</TableCell>
+                            <TableCell>{ordem?.produto?.descrição || '-'}</TableCell>
                             <TableCell className="flex gap-2">
                                 <Button variant="outline" size="sm" onClick={() => handleOpenForm(ordem)}>
                                     <Pencil className="h-4 w-4" />
                                 </Button>
-                                <Button variant="destructive" size="sm" onClick={() => handleDelete(ordem.id)}>
+                                <Button variant="destructive" size="sm" onClick={() => handleDelete(ordem?.id)}>
                                     <Trash2 className="h-4 w-4" />
                                 </Button>
                             </TableCell>
@@ -217,59 +228,80 @@ const OrdensServicoPage = () => {
                         </div>
                         <div>
                             <Label htmlFor="usuarioId">Usuário</Label>
-                            <Select
-                                onValueChange={(value) => handleSelectChange('usuarioId', value)}
-                                defaultValue={editingOrdem?.usuarioId.toString() || '0'}
-                            >
-                                <SelectTrigger>
-                                    <SelectValue placeholder="Selecione um usuário" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    {usuarios.map((usuario) => (
-                                        <SelectItem key={usuario.id} value={usuario.id.toString()}>
-                                            {usuario.name}
-                                        </SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
+                            <Controller
+                                name="usuarioId"
+                                control={control}
+                                render={({ field }) => (
+                                    <Select
+                                        onValueChange={(value) => field.onChange(Number(value))}
+                                        value={field.value.toString()}
+                                    >
+                                        <SelectTrigger>
+                                            <SelectValue placeholder="Selecione um usuário" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="0" disabled>Selecione um usuário</SelectItem>
+                                            {usuarios.map((usuario) => (
+                                                <SelectItem key={usuario.id} value={usuario.id.toString()}>
+                                                    {usuario.name}
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                )}
+                            />
                             {errors.usuarioId && <p className="text-red-500 text-sm">{errors.usuarioId.message}</p>}
                         </div>
                         <div>
                             <Label htmlFor="veiculoId">Veículo</Label>
-                            <Select
-                                onValueChange={(value) => handleSelectChange('veiculoId', value)}
-                                defaultValue={editingOrdem?.veiculoId.toString() || '0'}
-                            >
-                                <SelectTrigger>
-                                    <SelectValue placeholder="Selecione um veículo" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    {veiculos.map((veiculo) => (
-                                        <SelectItem key={veiculo.id} value={veiculo.id.toString()}>
-                                            {veiculo.placa} - {veiculo.marca} {veiculo.modelo}
-                                        </SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
+                            <Controller
+                                name="veiculoId"
+                                control={control}
+                                render={({ field }) => (
+                                    <Select
+                                        onValueChange={(value) => field.onChange(Number(value))}
+                                        value={field.value.toString()}
+                                    >
+                                        <SelectTrigger>
+                                            <SelectValue placeholder="Selecione um veículo" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="0" disabled>Selecione um veículo</SelectItem>
+                                            {veiculos.map((veiculo) => (
+                                                <SelectItem key={veiculo.id} value={veiculo.id.toString()}>
+                                                    {veiculo.placa} - {veiculo.marca} {veiculo.modelo}
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                )}
+                            />
                             {errors.veiculoId && <p className="text-red-500 text-sm">{errors.veiculoId.message}</p>}
                         </div>
                         <div>
                             <Label htmlFor="produtoId">Produto</Label>
-                            <Select
-                                onValueChange={(value) => handleSelectChange('produtoId', value)}
-                                defaultValue={editingOrdem?.produtoId.toString() || '0'}
-                            >
-                                <SelectTrigger>
-                                    <SelectValue placeholder="Selecione um produto" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    {produtos.map((produto) => (
-                                        <SelectItem key={produto.id} value={produto.id.toString()}>
-                                            {produto.descricao}
-                                        </SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
+                            <Controller
+                                name="produtoId"
+                                control={control}
+                                render={({ field }) => (
+                                    <Select
+                                        onValueChange={(value) => field.onChange(Number(value))}
+                                        value={field.value.toString()}
+                                    >
+                                        <SelectTrigger>
+                                            <SelectValue placeholder="Selecione um produto" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="0" disabled>Selecione um produto</SelectItem>
+                                            {produtos.map((produto) => (
+                                                <SelectItem key={produto.id} value={produto.id ? produto.id.toString() : ""}>
+                                                    {produto.descrição}
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                )}
+                            />
                             {errors.produtoId && <p className="text-red-500 text-sm">{errors.produtoId.message}</p>}
                         </div>
                         <Button type="submit">Salvar</Button>
